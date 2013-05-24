@@ -69,6 +69,7 @@
     [request setHTTPMethod:@"GET"];
     [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
     NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+        if(response){
     NSArray* JSONArrayList = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
     NSDictionary* result = [JSONArrayList valueForKey:@"RESULT"];
     NSArray* columns = [result valueForKey:@"COLUMNS"];
@@ -82,6 +83,7 @@
             [_enabledConnections addObject:@"0"];
             }
         }
+    }
     }
     NSLog(@"ENABLED CONNECTIONS = %@",_enabledConnections);
 }

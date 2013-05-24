@@ -67,9 +67,6 @@ BOOL shareSecurelyPressed, shouldCheck;
     [toolbarItems addObject:_shareSecurelyButton];
     [toolbarItems addObject:_shareSecurelyButton];
     [toolbarItems addObject:_shareSecurelyButton];
-    [toolbarItems addObject:_shareSecurelyButton];
-    [toolbarItems addObject:_shareSecurelyButton];
-    [toolbarItems addObject:_shareSecurelyButton];
     [self setToolbarItems:toolbarItems];
     
     
@@ -192,12 +189,10 @@ BOOL shareSecurelyPressed, shouldCheck;
         [err setBackgroundColor:[UIColor clearColor]];
         [err show];
     } else {
-        [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-                
+        [_shareSecurelyButton setEnabled:NO];
             if ([MFMailComposeViewController canSendMail])
             {
-                MFMailComposeViewController *mailer = [[MFMailComposeViewController alloc] init];
+                MFMailComposeViewController *mailer = [MFMailComposeViewController new];
                 mailer.mailComposeDelegate = self;
 //                [mailer setSubject:@""];
                 //            NSURLRequest* req = [NSURLRequest requestWithURL:_fileDownloadURL];
@@ -241,6 +236,10 @@ BOOL shareSecurelyPressed, shouldCheck;
                 NSData* payload = [requestParams dataUsingEncoding:NSUTF8StringEncoding];
                 [request setHTTPBody:payload];
                 NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+                if(!response){
+                    UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+                    [alert show];
+                } else {
                 NSArray* temp = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
                 if([[temp valueForKey:@"ERROR"] integerValue] == 0) {
                     NSString* downloadLink = [temp valueForKey:@"LINKURL"];
@@ -250,6 +249,7 @@ BOOL shareSecurelyPressed, shouldCheck;
                     [self presentViewController:mailer animated:YES completion:^(void){
                         shareSecurelyPressed = YES;
                     }];
+                    }
                 }
             }
             else
@@ -261,12 +261,7 @@ BOOL shareSecurelyPressed, shouldCheck;
                                                       otherButtonTitles: nil];
                 [alert show];
             }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [MBProgressHUD hideHUDForView:self.view animated:YES];
-                [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-                
-            });
-        });
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     }
     
 }
@@ -309,8 +304,23 @@ BOOL shareSecurelyPressed, shouldCheck;
 }
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error{
-    [self dismissViewControllerAnimated:YES completion:nil];
-    
+    if(result == MFMailComposeResultSent){
+        [TestFlight passCheckpoint:@"User sent a mail"];
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
+    else if(result == MFMailComposeResultCancelled){
+        [TestFlight passCheckpoint:@"User cancelled sending a mail"];
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
+    else if(result == MFMailComposeResultSaved){
+        [TestFlight passCheckpoint:@"User saved a mail"];
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
+    else if(result == MFMailComposeResultFailed){
+        [TestFlight passCheckpoint:@"User failed to send a mail"];
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
+    [_shareSecurelyButton setEnabled:YES];
 }
 
 - (void)viewDidUnload {

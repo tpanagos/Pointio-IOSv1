@@ -43,7 +43,6 @@ NSArray* tempArray;
     
     [_errorOccuredLabel setAlpha:0];
     [_shareFileButton setEnabled:NO];
-    [TestFlight passCheckpoint:@"User viewed a document"];
 	self.navigationItem.title = _fileName;
     _docWebView.delegate = self;
     _docWebView.scalesPageToFit = YES;
@@ -161,7 +160,7 @@ NSArray* tempArray;
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView{
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-    
+    [TestFlight passCheckpoint:@"User viewed a document"];
 
 }
 

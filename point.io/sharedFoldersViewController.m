@@ -54,6 +54,10 @@ UILabel* sharedFolderLabel;
         [request setHTTPMethod:@"GET"];
         [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
         NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+        if(!response){
+            UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+            [alert show];
+        } else {
         _JSONSharedFoldersArray = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
         NSLog(@"JSONSHAREDFOLDERSARRAY - %@",_JSONSharedFoldersArray);
         NSDictionary* result = [_JSONSharedFoldersArray valueForKey:@"RESULT"];
@@ -79,6 +83,7 @@ UILabel* sharedFolderLabel;
             [self.tableView reloadData];
             [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
         });
+        }
     });
 }
 

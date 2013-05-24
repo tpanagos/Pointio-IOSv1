@@ -29,7 +29,10 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [_datePicker setMinimumDate:[NSDate date]];
+    NSDate *now = [NSDate date];
+    int daysToAdd = 1;
+    NSDate *tomorrow = [now dateByAddingTimeInterval:60*60*24*daysToAdd];
+    [_datePicker setMinimumDate:tomorrow];
     _appDel = (AppDelegate*)[[UIApplication sharedApplication] delegate];
 	// Do any additional setup after loading the view.
 }

@@ -171,6 +171,7 @@ UIImageView* imgView2;
     NSLog(@"TEMP STRING = %@",temp);
     [[NSUserDefaults standardUserDefaults] setObject:temp forKey:@"ENABLEDCONNECTIONS"];
     [[NSUserDefaults standardUserDefaults] synchronize];
+    [TestFlight passCheckpoint:@"User changed enabled connections value"];
 }
 
 

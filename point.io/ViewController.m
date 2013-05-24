@@ -231,6 +231,10 @@ UIImageView* imgView;
             NSURLResponse* urlResponseList;
             NSError* requestErrorList;
             NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+            if(!response){
+                UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+                [alert show];
+            } else {
         _JSONArrayAuth = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
         NSString* errorFlagString = [_JSONArrayAuth valueForKey:@"ERROR"];
         int errorFlag = [errorFlagString integerValue];
@@ -256,6 +260,7 @@ UIImageView* imgView;
             [self goToConnectionsView];
             }
         });
+        }
     });
 }
 
@@ -301,7 +306,12 @@ UIImageView* imgView;
     [request setHTTPMethod:@"GET"];
     [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
     NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+    if(!response){
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+        [alert show];
+    } else {
     _JSONArrayList = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
+    }
 }
 
 - (void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{

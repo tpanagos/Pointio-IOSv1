@@ -109,6 +109,10 @@ BOOL passwordsDontMatch;
         NSData* payload = [requestParams dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:payload];
         NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+        if(!response){
+            UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+            [alert show];
+        } else {
         NSArray* temp = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
         _partnerSession = [temp valueForKey:@"PARTNERKEY"];
         
@@ -116,6 +120,7 @@ BOOL passwordsDontMatch;
             [MBProgressHUD hideHUDForView:self.view animated:YES];
             [self createUser];
         });
+        }
     });
 
 }
@@ -252,6 +257,10 @@ BOOL passwordsDontMatch;
         [request setHTTPBody:payload];
         [request addValue:_partnerSession forHTTPHeaderField:@"Authorization"];
         NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+    if(!response){
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+        [alert show];
+    } else {
         temp = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
         if([[temp valueForKey:@"ERROR"]integerValue] == 1){
             NSString* message = [temp valueForKey:@"MESSAGE"];
@@ -294,6 +303,7 @@ BOOL passwordsDontMatch;
         }
         [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
         }
+    }
 }
 
 - (void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex{

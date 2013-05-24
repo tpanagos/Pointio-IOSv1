@@ -720,7 +720,7 @@
                                 <rect key="frame" x="204" y="140" width="79" height="27"/>
                             </switch>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Screen capture" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="MPG-Yf-uRM">
-                                <rect key="frame" x="39" y="178" width="156" height="28"/>
+                                <rect key="frame" x="39" y="178" width="261" height="28"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="23"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
@@ -748,7 +748,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <toolbarItems>
-                        <barButtonItem title="Share Securely" id="Tuk-J1-dKX">
+                        <barButtonItem image="shareSecurelyButton.png" id="Tuk-J1-dKX">
                             <connections>
                                 <action selector="shareSecurelyPressed:" destination="dCL-IY-Drm" id="5X0-y8-93y"/>
                             </connections>
@@ -842,6 +842,7 @@ AQABAAEAAQAB//+dkAEA//+PgAAE//+dkAEI//+dkAEMUERUAFBTVABQV1QAUFBUAAAAAAEAAAABA
         <image name="background.png" width="640" height="921"/>
         <image name="createButton.png" width="171" height="93"/>
         <image name="goBackButton.png" width="165" height="87"/>
+        <image name="shareSecurelyButton.png" width="212" height="58"/>
         <image name="signInButton.png" width="165" height="87"/>
         <image name="signOutButton.png" width="165" height="87"/>
         <image name="signUpButton.png" width="165" height="87"/>

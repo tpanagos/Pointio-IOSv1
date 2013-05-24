@@ -72,6 +72,10 @@ NSMutableArray* keys2;
     [request setHTTPMethod:@"GET"];
     [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
     NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+    if(!response){
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+        [alert show];
+    } else {
     NSArray* availableConnectionsArray = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
     if([[availableConnectionsArray valueForKey:@"ERROR"] integerValue] == 0){
         NSLog(@"NO ERROR");
@@ -190,11 +194,11 @@ NSMutableArray* keys2;
         } else {
             _scrollView.contentSize = CGSizeMake(320, 1050);
         }
-        
         UISwipeGestureRecognizer * swipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(screenPressed)];
         swipe.direction = UISwipeGestureRecognizerDirectionUp;
         [self.scrollView addGestureRecognizer:swipe];
         [self.view addSubview:_scrollView];
+    }
     }
 }
 
@@ -460,6 +464,7 @@ NSMutableArray* keys2;
 }
 
 - (void) alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex{
+            [TestFlight passCheckpoint:@"User added a connection"];
     [self.navigationController popViewControllerAnimated:YES];
 }
 @end

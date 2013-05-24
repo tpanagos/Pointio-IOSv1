@@ -155,6 +155,10 @@ UIImageView* imgView4;
         [request setHTTPMethod:@"GET"];
         [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
         NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+        if(!response){
+            UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+            [alert show];
+        } else {
         _JSONArrayList = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
         NSLog(@"JSON ARRAY LIST = %@",_JSONArrayList);
         _connectionSharedFolders = nil;
@@ -178,13 +182,11 @@ UIImageView* imgView4;
             tempDict = [NSDictionary dictionaryWithObject:[temp valueForKey:@"NAME"] forKey:[temp valueForKey:@"SITETYPENAME"]];
             [_connectionSharedFolders addObject:tempDict];
         }
-        NSLog(@"CONNECTION SHARED FOLDERS = %@", _connectionSharedFolders);
         [self getAllPossibleConnections];
         NSArray* tempCpy = [NSArray arrayWithArray:_list];
         [_list setArray:[[NSSet setWithArray:_list] allObjects]];
         if([tempCpy count] - [_list count] == 1){
             if([_appDel.enabledConnections count] - [_list count] == 1){
-                            NSLog(@"WILL REMOVE ONE INDEX");
             [[NSNotificationCenter defaultCenter] postNotificationName:@"removeOneIndex" object:nil];
             }
         }
@@ -192,7 +194,6 @@ UIImageView* imgView4;
         dispatch_async(dispatch_get_main_queue(), ^{
             [MBProgressHUD hideHUDForView:self.view animated:YES];
             if([_appDel.enabledConnections count] == 0 || ([_appDel.enabledConnections count] != [_list count])){
-                NSLog(@"WILL GET ENABLED STATES");
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"getEnabledStates" object:nil];
                 }
             if([_appDel.enabledConnections count] != [_list count]){
@@ -209,6 +210,7 @@ UIImageView* imgView4;
             }
             [self.tableView reloadData];
         });
+        }
     });
 
     
@@ -308,6 +310,11 @@ UIImageView* imgView4;
     [request setHTTPMethod:@"GET"];
     [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
     NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+
+    if(!response){
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+        [alert show];
+    } else {
     NSArray* availableConnectionsArray = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
     if([[availableConnectionsArray valueForKey:@"ERROR"] integerValue] == 0){
         NSArray* result = [availableConnectionsArray valueForKey:@"RESULT"];
@@ -323,6 +330,7 @@ UIImageView* imgView4;
         }
         NSLog(@"ALL STORAGE IDs = %@",_storageIDs);
         _allPossibleConnections = [NSMutableArray arrayWithArray:tempy];
+    }
     }
 }
 

@@ -64,6 +64,7 @@ UILabel* sharedFolderLabel;
             dispatch_async(dispatch_get_main_queue(), ^{
                 [MBProgressHUD hideHUDForView:self.view animated:YES];
                 [self.tableView reloadData];
+                [TestFlight passCheckpoint:@"User loaded his workspace successfully"];
                 [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
             });
         });
@@ -129,6 +130,10 @@ UILabel* sharedFolderLabel;
         [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     }
         NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
+    if(!response){
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
+        [alert show];
+    } else {
         NSArray* listFilesResponse = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
         _containerID = [listFilesResponse valueForKey:@"CONTAINERID"];
         _fileNames = nil;
@@ -155,6 +160,7 @@ UILabel* sharedFolderLabel;
             
             
         }
+    }
     NSLog(@"NUMBER OF FILES = %i",[_fileNames count]);
 }
 
