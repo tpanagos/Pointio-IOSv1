@@ -1,10 +1,10 @@
-#import "connectionsTableViewController.h"
+#import "connectionsTableViewControlleriPad.h"
 
-@interface connectionsTableViewController ()
+@interface connectionsTableViewControlleriPad ()
 
 @end
 
-@implementation connectionsTableViewController
+@implementation connectionsTableViewControlleriPad
 
 @synthesize list = _list;
 @synthesize displayList = _displayList;
@@ -43,6 +43,7 @@ UIImageView* imgView4;
 
 - (BOOL) shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation{
     if ( [(NSString*)[UIDevice currentDevice].model isEqualToString:@"iPad"] ) {
+//        return toInterfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
         return UIInterfaceOrientationIsLandscape(toInterfaceOrientation);
     } else {
         if(toInterfaceOrientation == UIInterfaceOrientationPortrait){
@@ -53,6 +54,8 @@ UIImageView* imgView4;
     }
 }
 
+
+
 - (id)initWithStyle:(UITableViewStyle)style
 {
     self = [super initWithStyle:style];
@@ -62,10 +65,14 @@ UIImageView* imgView4;
     return self;
 }
 
+- (void) splitViewController:(UISplitViewController *)svc willHideViewController:(UIViewController *)aViewController withBarButtonItem:(UIBarButtonItem *)barButtonItem forPopoverController:(UIPopoverController *)pc{
+    
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-        
+    
     _appDel = (AppDelegate*) [[UIApplication sharedApplication] delegate];
     if(![self isConnectedToInternet]){
         UIAlertView* err = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Looks like there is no internet connection, please check the settings" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
@@ -75,14 +82,14 @@ UIImageView* imgView4;
         [err setBackgroundColor:[UIColor clearColor]];
         [err show];
     } else {
-    [self performSelectorOnMainThread:@selector(getConnections) withObject:nil waitUntilDone:YES];
-    [self getAllPossibleConnections];
+        [self performSelectorOnMainThread:@selector(getConnections) withObject:nil waitUntilDone:YES];
+        [self getAllPossibleConnections];
     }
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadLists:) name:@"reloadLists" object:nil];
     [_appDel setSessionKey:_sessionKey];
     _EmailFields = [NSMutableArray array];
     i = 0;
-
+    
     _manageStoredConnectionsButton.width = 0.01;
     NSMutableArray* toolbarButtons = [self.toolbarItems mutableCopy];
     // lol
@@ -107,23 +114,23 @@ UIImageView* imgView4;
 }
 
 - (void) viewDidDisappear:(BOOL)animated{
-
+    
 }
 
 - (void) viewWillAppear:(BOOL)animated{
     if(!imgView){
-    imgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 20, 320, 44)];
-    imgView.image = [UIImage imageNamed:@"blueBarImage.png"];
-    [self.navigationController.view addSubview:imgView];
-    imgView2 = [[UIImageView alloc] initWithFrame:CGRectMake(5, 27, 50, 29)];
-    imgView2.image = [UIImage imageNamed:@"backButton.png"];
-    [self.navigationController.view addSubview:imgView2];
-    imgView3 = [[UIImageView alloc] initWithFrame:CGRectMake(0, 1.1f, 320, 44)];
-    imgView3.image = [UIImage imageNamed:@"blueBarImageClean"];
-    [self.navigationController.toolbar addSubview:imgView3];
-    imgView4 = [[UIImageView alloc] initWithFrame:CGRectMake(45, 7, 200, 30)];
-    imgView4.image = [UIImage imageNamed:@"manageStoredConnections.png"];
-    [self.navigationController.toolbar addSubview:imgView4];
+        imgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
+        imgView.image = [UIImage imageNamed:@"blueBarImage.png"];
+        [self.navigationController.view addSubview:imgView];
+//        imgView2 = [[UIImageView alloc] initWithFrame:CGRectMake(5, 7, 50, 29)];
+//        imgView2.image = [UIImage imageNamed:@"backButton.png"];
+//        [self.navigationController.view addSubview:imgView2];
+        imgView3 = [[UIImageView alloc] initWithFrame:CGRectMake(0, 1.1f, 320, 44)];
+        imgView3.image = [UIImage imageNamed:@"blueBarImageClean"];
+        [self.navigationController.toolbar addSubview:imgView3];
+        imgView4 = [[UIImageView alloc] initWithFrame:CGRectMake(45, 7, 200, 30)];
+        imgView4.image = [UIImage imageNamed:@"manageStoredConnections.png"];
+        [self.navigationController.toolbar addSubview:imgView4];
     }
     imgView.alpha = 0;
     imgView2.alpha = 0;
@@ -153,6 +160,7 @@ UIImageView* imgView4;
 }
 
 - (void) reloadLists:(NSNotification *)notification{
+    _sessionKey = _appDel.sessionKey;
     [self performSelectorOnMainThread:@selector(getConnections) withObject:nil waitUntilDone:YES];
     [self.tableView reloadData];
 }
@@ -163,7 +171,7 @@ UIImageView* imgView4;
         NSURLResponse* urlResponseList;
         NSError* requestErrorList;
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-        [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/storagesites/list.json"]];
+        [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/v1/storagesite/list.json"]];
         [request setHTTPMethod:@"GET"];
         [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
         NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
@@ -171,59 +179,60 @@ UIImageView* imgView4;
             UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
             [alert show];
         } else {
-        _JSONArrayList = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
-        NSLog(@"JSON ARRAY LIST = %@",_JSONArrayList);
-        _connectionSharedFolders = nil;
-        _list = nil;
-        _displayList = nil;
-        _list = [NSMutableArray array];
-        _allPossibleConnections = [NSMutableArray array];
-        _storageIDs = [NSMutableArray array];
-        _displayList  = [NSMutableArray array];
-        _connectionSharedFolders = [NSMutableArray array];
-        self.navigationItem.backBarButtonItem.title = @"Back";
-        NSDictionary* result = [_JSONArrayList valueForKey:@"RESULT"];
-        NSArray* columns = [result valueForKey:@"COLUMNS"];
-        NSArray* data = [result valueForKey:@"DATA"];
-        NSDictionary* tempDict;
-        for(int i=0; i<[data count];i++){
-            NSArray* data2 = [data objectAtIndex:i];
-            NSDictionary* temp = [NSDictionary dictionaryWithObjects:data2 forKeys:columns];
-            [_list addObject:[temp valueForKey:@"SITETYPENAME"]];
-            tempDict = [NSDictionary dictionaryWithObject:[temp valueForKey:@"NAME"] forKey:[temp valueForKey:@"SITETYPENAME"]];
-            [_connectionSharedFolders addObject:tempDict];
-        }
-        [self getAllPossibleConnections];
-        NSArray* tempCpy = [NSArray arrayWithArray:_list];
-        [_list setArray:[[NSSet setWithArray:_list] allObjects]];
-        if([tempCpy count] - [_list count] == 1){
-            if([_appDel.enabledConnections count] - [_list count] == 1){
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"removeOneIndex" object:nil];
+            _JSONArrayList = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
+            NSLog(@"JSON ARRAY LIST = %@",_JSONArrayList);
+            _connectionSharedFolders = nil;
+            _list = nil;
+            _displayList = nil;
+            _list = [NSMutableArray array];
+            _allPossibleConnections = [NSMutableArray array];
+            _storageIDs = [NSMutableArray array];
+            _displayList  = [NSMutableArray array];
+            _connectionSharedFolders = [NSMutableArray array];
+            self.navigationItem.backBarButtonItem.title = @"Back";
+            NSDictionary* result = [_JSONArrayList valueForKey:@"RESULT"];
+            NSArray* columns = [result valueForKey:@"COLUMNS"];
+            NSArray* data = [result valueForKey:@"DATA"];
+            NSDictionary* tempDict;
+            for(int i=0; i<[data count];i++){
+                NSArray* data2 = [data objectAtIndex:i];
+                NSDictionary* temp = [NSDictionary dictionaryWithObjects:data2 forKeys:columns];
+                NSLog(@"CONNECTIONS VIEW CONTROLLER TEMP = %@",temp);
+                [_list addObject:[temp valueForKey:@"SITETYPENAME"]];
+                tempDict = [NSDictionary dictionaryWithObject:[temp valueForKey:@"NAME"] forKey:[temp valueForKey:@"SITETYPENAME"]];
+                [_connectionSharedFolders addObject:tempDict];
             }
-        }
-        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
-            if([_appDel.enabledConnections count] == 0 || ([_appDel.enabledConnections count] != [_list count])){
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"getEnabledStates" object:nil];
-                }
-            if([_appDel.enabledConnections count] != [_list count]){
-                _appDel.enabledConnections = nil;
-                _appDel.enabledConnections = [NSMutableArray array];
-                for(int i = 0; i< [_list count];i++){
-                    [_appDel.enabledConnections addObject:@"1"];
+            [self getAllPossibleConnections];
+            NSArray* tempCpy = [NSArray arrayWithArray:_list];
+            [_list setArray:[[NSSet setWithArray:_list] allObjects]];
+            if([tempCpy count] - [_list count] == 1){
+                if([_appDel.enabledConnections count] - [_list count] == 1){
+                    [[NSNotificationCenter defaultCenter] postNotificationName:@"removeOneIndex" object:nil];
                 }
             }
-            for (int i = 0; i < [_list count];i++){
-                if([[_appDel.enabledConnections objectAtIndex:i] integerValue] == 1){
-                    [_displayList addObject:[_list objectAtIndex:i]];
+            [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [MBProgressHUD hideHUDForView:self.view animated:YES];
+                if([_appDel.enabledConnections count] == 0 || ([_appDel.enabledConnections count] != [_list count])){
+                    [[NSNotificationCenter defaultCenter] postNotificationName:@"getEnabledStates" object:nil];
                 }
-            }
-            [self.tableView reloadData];
-        });
+                if([_appDel.enabledConnections count] != [_list count]){
+                    _appDel.enabledConnections = nil;
+                    _appDel.enabledConnections = [NSMutableArray array];
+                    for(int i = 0; i< [_list count];i++){
+                        [_appDel.enabledConnections addObject:@"1"];
+                    }
+                }
+                for (int i = 0; i < [_list count];i++){
+                    if([[_appDel.enabledConnections objectAtIndex:i] integerValue] == 1){
+                        [_displayList addObject:[_list objectAtIndex:i]];
+                    }
+                }
+                [self.tableView reloadData];
+            });
         }
     });
-
+    
     
 }
 
@@ -244,7 +253,7 @@ UIImageView* imgView4;
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-
+    
     return [_displayList count];
 }
 
@@ -256,46 +265,44 @@ UIImageView* imgView4;
     return cell;
 }
 
-
+/*
+ // Override to support conditional editing of the table view.
+ - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+ {
+ // Return NO if you do not want the specified item to be editable.
+ return YES;
+ }
+ */
 
 /*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
+ // Override to support editing the table view.
+ - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+ {
+ if (editingStyle == UITableViewCellEditingStyleDelete) {
+ // Delete the row from the data source
+ [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+ }
+ else if (editingStyle == UITableViewCellEditingStyleInsert) {
+ // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+ }
+ }
+ */
 
 /*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    }   
-    else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
+ // Override to support rearranging the table view.
+ - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
+ {
+ }
+ */
 
 /*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
+ // Override to support conditional rearranging of the table view.
+ - (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
+ {
+ // Return NO if you do not want the item to be re-orderable.
+ return YES;
+ }
+ */
 
 #pragma mark - Table view delegate
 
@@ -317,48 +324,48 @@ UIImageView* imgView4;
     NSURLResponse* urlResponseList;
     NSError* requestErrorList;
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-    [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/storagetypes/list.json"]];
+    [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/v1/storagetypes/list.json"]];
     [request setHTTPMethod:@"GET"];
     [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
     NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
-
+    
     if(!response){
         UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
         [alert show];
     } else {
-    NSArray* availableConnectionsArray = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
-    if([[availableConnectionsArray valueForKey:@"ERROR"] integerValue] == 0){
-        NSArray* result = [availableConnectionsArray valueForKey:@"RESULT"];
-        NSArray* columns = [result valueForKey:@"COLUMNS"];
-        NSArray* data = [result valueForKey:@"DATA"];
-        for (int i = 0; i<[data count]; i++) {
-            NSArray* data2 = [data objectAtIndex:i];
-            NSDictionary* temp = [NSDictionary dictionaryWithObjects:data2 forKeys:columns];
-            if([[temp valueForKey:@"ENABLED"] integerValue] == 1){
-                [tempy addObject:[temp valueForKey:@"SITETYPENAME"]];
-                [_storageIDs addObject:[temp valueForKey:@"SITETYPEID"]];
+        NSArray* availableConnectionsArray = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
+        if([[availableConnectionsArray valueForKey:@"ERROR"] integerValue] == 0){
+            NSArray* result = [availableConnectionsArray valueForKey:@"RESULT"];
+            NSArray* columns = [result valueForKey:@"COLUMNS"];
+            NSArray* data = [result valueForKey:@"DATA"];
+            for (int i = 0; i<[data count]; i++) {
+                NSArray* data2 = [data objectAtIndex:i];
+                NSDictionary* temp = [NSDictionary dictionaryWithObjects:data2 forKeys:columns];
+                if([[temp valueForKey:@"ENABLED"] integerValue] == 1){
+                    [tempy addObject:[temp valueForKey:@"SITETYPENAME"]];
+                    [_storageIDs addObject:[temp valueForKey:@"SITETYPEID"]];
+                }
             }
+            NSLog(@"ALL STORAGE IDs = %@",_storageIDs);
+            _allPossibleConnections = [NSMutableArray arrayWithArray:tempy];
         }
-        NSLog(@"ALL STORAGE IDs = %@",_storageIDs);
-        _allPossibleConnections = [NSMutableArray arrayWithArray:tempy];
-    }
     }
 }
 
 - (IBAction)addNewConnectionPressed:(id)sender {
     if([_allPossibleConnections count] != 0){
-    _alert	= [[SBTableAlert alloc] initWithTitle:@"Choose a connection" cancelButtonTitle:@"Cancel" messageFormat:nil];
-    [_alert.view setTag:2];
-    [_alert setStyle:SBTableAlertStyleApple];
-    [_alert setDelegate:self];
-    [_alert setDataSource:self];
+        _alert	= [[SBTableAlert alloc] initWithTitle:@"Choose a connection" cancelButtonTitle:@"Cancel" messageFormat:nil];
+        [_alert.view setTag:2];
+        [_alert setStyle:SBTableAlertStyleApple];
+        [_alert setDelegate:self];
+        [_alert setDataSource:self];
         UIImageView* temp = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 286, 271)];
         temp.image = [UIImage imageNamed:@"connectionsAlertView"];
         [_alert.view addSubview:temp];
-    [_alert show];
-    
-    _userKeys = [NSMutableArray array];
-    _userValues = [NSMutableArray array];
+        [_alert show];
+        
+        _userKeys = [NSMutableArray array];
+        _userValues = [NSMutableArray array];
     } else {
         UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"There are no available connections for you" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
         UIImageView* alertCustomView = [[UIImageView alloc] initWithFrame:CGRectMake(2, 0, 280, 154)];
@@ -370,7 +377,7 @@ UIImageView* imgView4;
 
 - (UITableViewCell *)tableAlert:(SBTableAlert *)tableAlert cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	UITableViewCell *cell;
-
+    
 	if (tableAlert.view.tag == 0 || tableAlert.view.tag == 1) {
 		cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"ConnectionCell"];
 	} else {
@@ -380,7 +387,7 @@ UIImageView* imgView4;
 	if(indexPath.row == [_allPossibleConnections count] || indexPath.row > [_allPossibleConnections count]){
         [cell.textLabel setText:@""];
     } else {
-	[cell.textLabel setText:[_allPossibleConnections objectAtIndex:indexPath.row]];
+        [cell.textLabel setText:[_allPossibleConnections objectAtIndex:indexPath.row]];
 	}
 	return cell;
 }
@@ -389,16 +396,16 @@ UIImageView* imgView4;
     if([_allPossibleConnections count] < 4){
         return 4;
     } else {
-	return [_allPossibleConnections count];
+        return [_allPossibleConnections count];
     }
 }
 
 - (NSInteger)numberOfSectionsInTableAlert:(SBTableAlert *)tableAlert {
-		return 1;
+    return 1;
 }
 
 - (NSString *)tableAlert:(SBTableAlert *)tableAlert titleForHeaderInSection:(NSInteger)section {
-		return nil;
+    return nil;
 }
 
 #pragma mark - SBTableAlertDelegate
@@ -412,6 +419,20 @@ UIImageView* imgView4;
         NSLog(@"SITE TYPE ID = %@",[_storageIDs objectAtIndex:indexPath.row]);
         requestedConnectionName = [_allPossibleConnections objectAtIndex:indexPath.row];
         [self performSegueWithIdentifier:@"getOtherParams" sender:self];
+    }
+}
+
+- (void) checkForAtSign:(NSNotification*)notification{
+    if([[_EmailFields objectAtIndex:i] isEqualToString:@"YES"]){
+        NSLog(@"IS EMAIL FIELD, because i = %i",i);
+        if([[_globalAlert textFieldAtIndex:0].text isEqualToString:@""]){
+            [_globalAlert setMessage:@"Enter E-Mail Address"];
+        }
+        if([[_globalAlert textFieldAtIndex:0].text rangeOfString:@"@"].location == NSNotFound){
+            [_globalAlert setMessage:@"You haven't entered the @ sign yet"];
+        } else {
+            [_globalAlert setMessage:@"Enter E-Mail Address"];
+        }
     }
 }
 

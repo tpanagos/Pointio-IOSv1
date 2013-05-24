@@ -32,6 +32,18 @@ UIImageView* imgView2;
 
 BOOL passwordsDontMatch;
 
+- (BOOL) shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation{
+    if ( [(NSString*)[UIDevice currentDevice].model isEqualToString:@"iPad"] ) {
+        return UIInterfaceOrientationIsLandscape(toInterfaceOrientation);
+    } else {
+        if(toInterfaceOrientation == UIInterfaceOrientationPortrait){
+            return YES;
+        } else {
+            return NO;
+        }
+    }
+}
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -44,6 +56,7 @@ BOOL passwordsDontMatch;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
     _emailTextField.delegate = self;
     _firstNameTextField.delegate = self;
     _lastNameTextField.delegate = self;
@@ -53,6 +66,8 @@ BOOL passwordsDontMatch;
 }
 
 - (void) viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    self.navigationItem.hidesBackButton = YES;
     [UIView animateWithDuration:0.25 animations:^(void) {
         imgView.alpha = 0;
         imgView2.alpha = 0;
@@ -62,13 +77,15 @@ BOOL passwordsDontMatch;
 }
 
 - (void) viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    self.navigationItem.hidesBackButton = YES;
     if(!imgView){
     imgView2 = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
     imgView2.image = [UIImage imageNamed:@"barImageWithLogoCentered.png"];
     [self.navigationController.navigationBar addSubview:imgView2];
-    imgView = [[UIImageView alloc] initWithFrame:CGRectMake(5, 27, 50, 29)];
+    imgView = [[UIImageView alloc] initWithFrame:CGRectMake(5, 7, 51, 29)];
     imgView.image = [UIImage imageNamed:@"backButton.png"];
-    [self.navigationController.view addSubview:imgView];
+    [self.navigationController.navigationBar addSubview:imgView];
     }
     imgView2.alpha = 0;
     imgView.alpha = 0;
@@ -76,6 +93,12 @@ BOOL passwordsDontMatch;
         imgView2.alpha = 1;
         imgView.alpha = 1;
     }];
+}
+
+- (void) viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    self.navigationItem.hidesBackButton = NO;
+    [self.navigationController.navigationBar addSubview:imgView];
 }
 
 - (void)didReceiveMemoryWarning
@@ -104,7 +127,7 @@ BOOL passwordsDontMatch;
         NSURLResponse* urlResponseList;
         NSError* requestErrorList;
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-        [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/partner/preauth.json"]];
+        [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/users/preauth.json"]];
         [request setHTTPMethod:@"POST"];
         NSData* payload = [requestParams dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:payload];
@@ -149,7 +172,7 @@ BOOL passwordsDontMatch;
     [_lastNameTextField resignFirstResponder];
     [_emailTextField resignFirstResponder];
     [_passwordTextField resignFirstResponder];
-    [_reEnterPasswordTextField resignFirstResponder];// a pass E68AE2D6
+    [_reEnterPasswordTextField resignFirstResponder];
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField{
@@ -251,7 +274,7 @@ BOOL passwordsDontMatch;
         NSURLResponse* urlResponseList;
         NSError* requestErrorList;
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-        [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/partner/user/create.json"]];
+        [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/users/create.json"]];
         [request setHTTPMethod:@"POST"];
         NSData* payload = [requestParams dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:payload];
@@ -286,7 +309,7 @@ BOOL passwordsDontMatch;
                 [pairs addObject:[NSString stringWithFormat:@"%@=%@", key, params[key]]];
             }
             requestParams = [pairs componentsJoinedByString:@"&"];
-            [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/partner/user/chpass.json"]];
+            [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/users/chpass.json"]];
             payload = [requestParams dataUsingEncoding:NSUTF8StringEncoding];
             [request setHTTPBody:payload];
             response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];

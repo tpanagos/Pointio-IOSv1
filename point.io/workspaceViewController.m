@@ -119,22 +119,38 @@ UILabel* sharedFolderLabel;
         NSURLResponse* urlResponseList;
         NSError* requestErrorList;
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-        NSString* URLString = [NSString stringWithFormat:@"https://connect.cloudxy.com/api/v1/folder/%@/contents.json",_shareID];
-        [request setURL:[NSURL URLWithString:URLString]];
+        NSString* URLString = [NSString stringWithFormat:@"https://api.point.io/api/v2/folders/list.json"];
+    
+    NSMutableArray* objects;
+    NSMutableArray* keys;
+    if(_containerID){
+        objects = [NSArray arrayWithObjects:_shareID,_remotePath,_containerID,nil];
+        keys = [NSArray arrayWithObjects:@"folderid",@"path",@"containerid",nil];
+    } else {
+        objects = [NSArray arrayWithObjects:_shareID,_remotePath,nil];
+        keys = [NSArray arrayWithObjects:@"folderid",@"path",nil];
+    }
+    NSDictionary* params = [NSDictionary dictionaryWithObjects:objects forKeys:keys];
+
+    NSMutableArray* pairs = [[NSMutableArray alloc] initWithCapacity:0];
+    for(NSString* key in params){
+        [pairs addObject:[NSString stringWithFormat:@"%@=%@", key, params[key]]];
+    }
+    NSString* requestParams = [pairs componentsJoinedByString:@"&"];
+
+    URLString = [URLString stringByAppendingFormat:@"?%@",requestParams];
+    URLString = [URLString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    [request setURL:[NSURL URLWithString:URLString]];
+    NSLog(@"URL STRING = %@",URLString);
         [request setHTTPMethod:@"POST"];
         [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
-    if([_containerID length] >0 && [_remotePath length]>0){
-        NSData* payload = [[NSString stringWithFormat:@"path=%@&containerid=%@",_remotePath,_containerID] dataUsingEncoding:NSUTF8StringEncoding];
-        [request setHTTPBody:payload];
-        [request setValue:[NSString stringWithFormat:@"%d", [payload length]] forHTTPHeaderField:@"Content-Length"];
-        [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    }
         NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
     if(!response){
         UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Request response is nil" delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles: nil];
         [alert show];
     } else {
         NSArray* listFilesResponse = [NSJSONSerialization JSONObjectWithData:response options:NSJSONReadingMutableContainers error:nil];
+        NSLog(@"list file response = %@",listFilesResponse);
         _containerID = [listFilesResponse valueForKey:@"CONTAINERID"];
         _fileNames = nil;
         _fileIDs = nil;
@@ -204,7 +220,8 @@ UILabel* sharedFolderLabel;
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     i = indexPath.row;
-    if([[_fileIDs objectAtIndex:i] rangeOfString:@"folder:"].location == NSNotFound){
+    NSLog(@"%@",_fileIDs);
+    if([[_fileIDs objectAtIndex:i] isKindOfClass:[NSString class]] && [[_fileIDs objectAtIndex:i] rangeOfString:@"folder:"].location == NSNotFound){
         NSLog(@"IS NOT A FOLDER");
         [self performSegueWithIdentifier:@"viewDocument" sender:nil];
     } else {
@@ -224,6 +241,7 @@ UILabel* sharedFolderLabel;
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
             [self getFileNamesAndFileIDs];
+            
             dispatch_async(dispatch_get_main_queue(), ^{
                 [MBProgressHUD hideHUDForView:self.view animated:YES];
                 [self.navigationItem setTitle:chosenFolderTitle];

@@ -40,17 +40,13 @@ UILabel* sharedFolderLabel;
     _list = [NSMutableArray array];
     _shareIDs = [NSMutableArray array];
     
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-    [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/v1/folderlist.json"]];
-    [request setHTTPMethod:@"GET"];
-    [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
     [MBProgressHUD showHUDAddedTo:self.view animated:YES];
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
         NSURLResponse* urlResponseList;
         NSError* requestErrorList;
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-        [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/v1/folderlist.json"]];
+        [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/accessrules/list"]];
         [request setHTTPMethod:@"GET"];
         [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
         NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];

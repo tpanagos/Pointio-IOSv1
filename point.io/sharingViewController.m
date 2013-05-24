@@ -58,6 +58,7 @@ BOOL shareSecurelyPressed, shouldCheck;
     shouldCheck = YES;
     shareSecurelyPressed = NO;
     _passwordsDontMatchLabel.alpha = 0;
+    _passwordsDontMatchLabel.frame = CGRectMake(_passwordsDontMatchLabel.frame.origin.x, _passwordSwitch.frame.origin.y + 20, _passwordsDontMatchLabel.frame.size.width, _passwordsDontMatchLabel.frame.size.height);
     [_expireSwitch addTarget:self action:@selector(expireSwitchValueChanged) forControlEvents:UIControlEventValueChanged];
     [_passwordSwitch addTarget:self action:@selector(passwordSwitchValueChanged) forControlEvents:UIControlEventValueChanged];
     
@@ -212,7 +213,7 @@ BOOL shareSecurelyPressed, shouldCheck;
                 NSURLResponse* urlResponseList;
                 NSError* requestErrorList;
                 NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-                [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/v1/link/create.json"]];
+                [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/links/create.json"]];
                 [request setHTTPMethod:@"POST"];
                 [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
                 NSString* requestParams = [NSString stringWithFormat:@"shareId=%@&fileid=%@&filename=%@&remotepath=%@&containerid=%@",_shareID,_fileID,_fileName,_remotePath,_containerID];

@@ -26,11 +26,35 @@
 
 UIImageView* imgView;
 
+- (BOOL) shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation{
+    if ( [(NSString*)[UIDevice currentDevice].model isEqualToString:@"iPad"] ) {
+//        return toInterfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
+        return UIInterfaceOrientationIsLandscape(toInterfaceOrientation);
+    } else {
+        if(toInterfaceOrientation == UIInterfaceOrientationPortrait){
+            return YES;
+        } else {
+            return NO;
+        }
+    }
+}
+
+- (BOOL)splitViewController:(UISplitViewController*)svc
+   shouldHideViewController:(UIViewController *)vc
+              inOrientation:(UIInterfaceOrientation)orientation
+{
+    return YES;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
     _successfulLogin = NO;
+    if(self.splitViewController){
+        self.splitViewController.delegate = nil;
+        self.splitViewController.delegate = self;
+    }
     [_passwordTextField setSecureTextEntry:YES];
     [_usernameTextField setDelegate:self];
     [_passwordTextField setDelegate:self];
@@ -39,7 +63,6 @@ UIImageView* imgView;
     self.navigationController.navigationBar.tintColor = [UIColor colorWithRed:0.10980392156863f green:0.37254901960784f blue:0.6078431372549f alpha:1];
     self.navigationController.toolbar.tintColor = [UIColor colorWithRed:0.10980392156863f green:0.37254901960784f blue:0.6078431372549f alpha:1];
     UISwipeGestureRecognizer* swipedUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(screenPressed)];
-    
     
     [swipedUp setDirection:UISwipeGestureRecognizerDirectionUp];
     [self.view addGestureRecognizer:swipedUp];
@@ -82,6 +105,8 @@ UIImageView* imgView;
     }
     return YES;
 }
+
+
 
 - (IBAction)signInPressed {
     if(![self isConnectedToInternet]){
@@ -131,7 +156,11 @@ UIImageView* imgView;
         [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
         dispatch_async(dispatch_get_main_queue(), ^{
             [MBProgressHUD hideHUDForView:self.view animated:YES];
+            if ( [(NSString*)[UIDevice currentDevice].model isEqualToString:@"iPad"] ) {
+                 [self performSegueWithIdentifier:@"goToDocView" sender:self];
+            } else {
             [self performSegueWithIdentifier:@"goToConnections" sender:self];
+            }
         });
     });
 }
@@ -146,6 +175,7 @@ UIImageView* imgView;
         [err show];
     } else {
         [self performSegueWithIdentifier:@"goToSignup" sender:self];
+        NSLog(@"kik");
     }
 }
 
@@ -213,7 +243,7 @@ UIImageView* imgView;
 
 - (void) performAuthCall{
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-        [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/v1/auth.json"]];
+        [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/auth.json"]];
         [request setHTTPMethod:@"POST"];
         [request setHTTPBody:[_postString dataUsingEncoding:NSUTF8StringEncoding]];
         [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
@@ -248,6 +278,7 @@ UIImageView* imgView;
             [defaults synchronize];
             NSDictionary* result = [_JSONArrayAuth valueForKey:@"RESULT"];
             _sessionKey = [result valueForKey:@"SESSIONKEY"];
+            _appDel.sessionKey = _sessionKey;
             NSLog(@"SESSION KEY = %@",_sessionKey);
             [self performSelectorOnMainThread:@selector(performListCall) withObject:nil waitUntilDone:YES];
             
@@ -290,7 +321,11 @@ UIImageView* imgView;
     if([[_JSONArrayAuth valueForKey:@"ERROR"] integerValue] == 0){
         [TestFlight passCheckpoint:@"User logged in"];
         _successfulLogin = YES;
-        [self performSegueWithIdentifier:@"goToConnections" sender:self];
+        if ([(NSString*)[UIDevice currentDevice].model isEqualToString:@"iPad"] ) {
+            [self performSegueWithIdentifier:@"goToDocView" sender:self];
+        } else {
+            [self performSegueWithIdentifier:@"goToConnections" sender:self];
+        }
     } else {
         _successfulLogin = NO;
     }
@@ -298,11 +333,10 @@ UIImageView* imgView;
 }
 
 - (void) performListCall{
-    
     NSURLResponse* urlResponseList;
     NSError* requestErrorList;
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-    [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/v1/storagesite/list.json"]];
+    [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/storagesites/list.json"]];
     [request setHTTPMethod:@"GET"];
     [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
     NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
@@ -332,6 +366,10 @@ UIImageView* imgView;
 }
 
 - (void) viewDidAppear:(BOOL)animated{
+    if(self.splitViewController){
+        self.splitViewController.delegate = nil;
+        self.splitViewController.delegate = self;
+    }
     [self.navigationController setToolbarHidden:YES animated:YES];
     [self.navigationItem setHidesBackButton:YES];
     [self screenPressed];

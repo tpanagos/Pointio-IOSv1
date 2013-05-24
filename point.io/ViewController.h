@@ -7,8 +7,11 @@
 #import "Reachability.h"
 #import "SystemConfiguration/SystemConfiguration.h"
 #import <QuartzCore/QuartzCore.h>
+#import "connectionsTableViewControlleriPad.h"
 
-@interface ViewController : UIViewController <UITextFieldDelegate>
+@interface ViewController : UIViewController <UITextFieldDelegate, UISplitViewControllerDelegate>
+
+@property (retain, nonatomic) IBOutlet connectionsTableViewControlleriPad *detailViewController;
 
 @property (weak, nonatomic) IBOutlet UITextField *usernameTextField;
 @property (weak, nonatomic) IBOutlet UITextField *passwordTextField;

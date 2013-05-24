@@ -68,7 +68,7 @@ NSMutableArray* keys2;
     NSURLResponse* urlResponseList;
     NSError* requestErrorList;
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-    [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/v1/storagetypes/list.json"]];
+    [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/storagetypes/list.json"]];
     [request setHTTPMethod:@"GET"];
     [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
     NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
@@ -89,7 +89,7 @@ NSMutableArray* keys2;
                 NSURLResponse* urlResponseList;
                 NSError* requestErrorList;
                 NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-                [request setURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://connect.cloudxy.com/api/v1/storagetypes/%@/params.json",_connectionSiteTypeID]]];
+                [request setURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://api.point.io/api/v2/storagetypes/%@/params.json",_connectionSiteTypeID]]];
                 NSLog(@"SITE TYPE ID IN NEW CONNECTION AA = %@",_connectionSiteTypeID);
                 [request setHTTPMethod:@"GET"];
                 [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
@@ -99,7 +99,6 @@ NSMutableArray* keys2;
             }
         }
         
-        
         NSArray* result2 = [storageInputParams valueForKey:@"RESULT"];
         NSLog(@"RESULT 2 = %@",result2);
         NSArray* columns2 = [result2 valueForKey:@"COLUMNS"];
@@ -108,7 +107,7 @@ NSMutableArray* keys2;
             NSDictionary* temp2 = [NSDictionary dictionaryWithObjects:[data2 objectAtIndex:i] forKeys:columns2];
             NSLog(@"TEMP 2 = %@",temp2);
             if([[temp2 valueForKey:@"ENABLED"] integerValue] == 1){
-                if([[temp2 valueForKey:@"INPUTTYPE"] isEqualToString:@"TextInput"]){
+                if([[temp2 valueForKey:@"INPUTTYPE"] isEqualToString:@"TextInput"] || [[temp2 valueForKey:@"INPUTTYPE"] isEqualToString:@"BoxAuthInput"] || [[temp2 valueForKey:@"INPUTTYPE"] isEqualToString:@"DropboxAuthInput"]){
                     if(!keys2){
                         keys2 = [NSMutableArray array];
                     }
@@ -329,6 +328,11 @@ NSMutableArray* keys2;
             }
         }
         if(enteredAllData){
+            if([vals count] != [keys2 count]){
+                NSLog(@"Different count objects of keys and values.");
+                NSLog(@"VALS = %@, KEYS = %@",vals,keys2);
+                [self displayMessage:NO];
+            } else {
         _userStorageInput = [NSDictionary dictionaryWithObjects:vals forKeys:keys2];
         
         NSLog(@"USER STORAGE INPUT = %@",_userStorageInput);
@@ -394,14 +398,16 @@ NSMutableArray* keys2;
         NSString* requestParams = [pairs componentsJoinedByString:@"&"];
         NSLog(@"REQUEST PARAMS = %@",requestParams);
         NSMutableURLRequest *request2 = [[NSMutableURLRequest alloc] init];
-        [request2 setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/v1/storagesite/create.json"]];
         [request2 setHTTPMethod:@"POST"];
         [request2 addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
         NSURLResponse* urlResponseList2;
         NSError* requestErrorList2;
-        NSData* payload = [requestParams dataUsingEncoding:NSUTF8StringEncoding];
-        [request2 setHTTPBody:payload];
-        [request2 setValue:[NSString stringWithFormat:@"%d", [payload length]] forHTTPHeaderField:@"Content-Length"];
+                
+                
+            NSString* URLString = [@"https://api.point.io/api/v2/storagesites/create.json" stringByAppendingFormat:@"?%@",requestParams];
+            URLString = [URLString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+                [request2 setURL:[NSURL URLWithString:URLString]];
+                
         [request2 setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
         NSData* response2 = [NSURLConnection sendSynchronousRequest:request2 returningResponse:&urlResponseList2 error:&requestErrorList2];
         temp = [NSJSONSerialization JSONObjectWithData:response2 options:NSJSONReadingMutableContainers error:nil];
@@ -440,10 +446,10 @@ NSMutableArray* keys2;
                 [[NSUserDefaults standardUserDefaults] synchronize];
             } else if ([[temp valueForKey:@"ERROR"] integerValue] == 0){
                 [self displayMessage:NO];
-            }
-        });
+                }
+            });
+        }
     });
-    
 }
 
 - (void) displayMessage:(BOOL)success{

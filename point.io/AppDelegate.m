@@ -20,7 +20,6 @@
      addObserver:self selector:@selector(removeOneIndex:) name:@"removeOneIndex" object:nil];
     
     NSString* temp = [[NSUserDefaults standardUserDefaults] objectForKey:@"ENABLEDCONNECTIONS"];
-    NSLog(@"TEMP STRING = %@",temp);
     if([temp length] > 0){
         _enabledConnections = [NSMutableArray array];
         for(int i = 0; i < [temp length]; i++){
@@ -31,7 +30,6 @@
             }
         }
     }
-    NSLog(@"ENABLED CONS = %@",_enabledConnections);
     return YES;
 }
 
@@ -54,7 +52,6 @@
         }
     }
     [[NSUserDefaults standardUserDefaults] setObject:temp forKey:@"ENABLEDCONNECTIONS"];
-    NSLog(@"REMOVED INDEX, WILL SAVE NOW TEMP = %@",temp);
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -65,7 +62,7 @@
     NSURLResponse* urlResponseList;
     NSError* requestErrorList;
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-    [request setURL:[NSURL URLWithString:@"https://connect.cloudxy.com/api/v1/storagesite/list.json"]];
+    [request setURL:[NSURL URLWithString:@"https://api.point.io/api/v2/storagesites/list.json"]];
     [request setHTTPMethod:@"GET"];
     [request addValue:_sessionKey forHTTPHeaderField:@"Authorization"];
     NSData* response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponseList error:&requestErrorList];
@@ -85,7 +82,6 @@
         }
     }
     }
-    NSLog(@"ENABLED CONNECTIONS = %@",_enabledConnections);
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application

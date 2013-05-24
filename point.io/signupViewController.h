@@ -10,7 +10,7 @@
 #import "MBProgressHUD.h"
 #import "ViewController.h"
 
-@interface signupViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate>
+@interface signupViewController : UIViewController <UITextFieldDelegate, UIAlertViewDelegate, UINavigationControllerDelegate>
 
 @property (nonatomic) NSString* partnerSession;
 

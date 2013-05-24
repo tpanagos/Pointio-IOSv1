@@ -4,6 +4,7 @@
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+@property (retain, nonatomic) IBOutlet UISplitViewController *splitViewController;
 @property (nonatomic) NSMutableDictionary* storageStatus;
 @property (nonatomic) BOOL hasLoggedIn;
 @property (nonatomic, strong) NSMutableArray* enabledConnections;
